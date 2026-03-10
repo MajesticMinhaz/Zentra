@@ -5,236 +5,358 @@
   <title>{{ quote.number }}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10.5px; color: #1e293b; line-height: 1.55; background: #fff; }
-    .page { width: 210mm; min-height: 297mm; padding: 12mm 14mm 26mm; margin: auto; background: #fff; position: relative; }
 
-    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 9mm; padding-bottom: 6mm; border-bottom: 2.5px solid #0f172a; }
-    .logo-img { max-height: 50px; max-width: 160px; object-fit: contain; display: block; margin-bottom: 4px; }
-    .company-name { font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; }
-    .company-tagline { font-size: 8px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.14em; margin-top: 2px; }
-    .company-meta { font-size: 9px; color: #64748b; line-height: 1.65; margin-top: 6px; }
-    .header-right { text-align: right; }
-    .doc-label { font-size: 30px; font-weight: 800; color: #0f172a; letter-spacing: -0.04em; line-height: 1; text-transform: uppercase; }
-    .doc-number { font-size: 10.5px; color: #64748b; margin-top: 5px; font-weight: 500; }
-    .status-pill { display: inline-block; margin-top: 7px; padding: 3px 10px; border-radius: 20px; font-size: 8px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; }
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 9.5px;
+      color: #1e293b;
+      line-height: 1.5;
+      background: #fff;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #fff;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOP ACCENT BAR ── */
+    .accent-bar {
+      height: 5px;
+      background: linear-gradient(90deg, #0f172a 0%, #7c3aed 60%, #a78bfa 100%);
+      width: 100%;
+    }
+
+    /* ── MAIN CONTENT WRAPPER ── */
+    .content {
+      padding: 10mm 14mm 22mm 14mm;
+      flex: 1;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 9mm;
+    }
+
+    .header-left { flex: 1; min-width: 0; padding-right: 12mm; }
+    .logo-img { max-height: 52px; max-width: 150px; object-fit: contain; display: block; margin-bottom: 6px; }
+    .company-name { font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; line-height: 1.1; }
+    .company-tagline { font-size: 7px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.18em; margin-top: 3px; }
+    .company-meta { font-size: 8px; color: #64748b; line-height: 1.8; margin-top: 7px; }
+
+    .header-right { text-align: right; flex-shrink: 0; }
+    .doc-type {
+      font-size: 7px; font-weight: 700; color: #7c3aed;
+      text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 4px;
+    }
+    .doc-number { font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; line-height: 1; }
+    .status-pill {
+      display: inline-block; margin-top: 7px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 7px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
     .s-draft    { background: #f1f5f9; color: #64748b; }
     .s-sent     { background: #dbeafe; color: #1d4ed8; }
     .s-accepted { background: #dcfce7; color: #15803d; }
     .s-rejected { background: #fee2e2; color: #dc2626; }
     .s-expired  { background: #f1f5f9; color: #94a3b8; }
 
-    .meta-strip { display: flex; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; margin-bottom: 8mm; background: #f8fafc; }
-    .meta-item { flex: 1; padding: 8px 13px; border-right: 1px solid #e2e8f0; }
-    .meta-item:last-child { border-right: none; }
-    .meta-label { font-size: 7px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 3px; }
-    .meta-value { font-size: 11px; font-weight: 600; color: #0f172a; }
-    .meta-value.alert { color: #dc2626; }
+    /* ── DIVIDER ── */
+    .divider { border: none; border-top: 1.5px solid #e2e8f0; margin: 0 0 8mm 0; }
 
-    .addresses { display: flex; gap: 12mm; margin-bottom: 8mm; }
-    .address-block { flex: 1; }
-    .addr-label { font-size: 7px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 6px; padding-bottom: 5px; border-bottom: 1px solid #e2e8f0; }
-    .addr-name { font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
-    .addr-line { font-size: 9.5px; color: #475569; line-height: 1.7; }
+    /* ── THREE-COLUMN INFO ROW ── */
+    .info-row { display: flex; gap: 5mm; margin-bottom: 8mm; }
 
+    .bill-to-block {
+      flex: 1.2; background: #f8fafc; border-radius: 7px;
+      padding: 8px 11px; border-left: 3px solid #7c3aed;
+    }
+    .from-block { flex: 1; padding: 0 0 0 2mm; }
+    .meta-block {
+      flex: 1.1; background: #0f172a; border-radius: 7px; padding: 8px 11px;
+    }
+
+    .block-label { font-size: 6.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 5px; }
+    .bill-to-block .block-label { color: #7c3aed; }
+    .from-block .block-label { color: #94a3b8; }
+    .meta-block .block-label { color: #64748b; }
+
+    .addr-name { font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+    .addr-line { font-size: 8.5px; color: #475569; line-height: 1.7; }
+    .addr-email { font-size: 8.5px; color: #7c3aed; margin-top: 3px; }
+    .addr-tax { font-size: 8px; color: #94a3b8; margin-top: 1px; }
+
+    .from-name { font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+    .from-line { font-size: 8.5px; color: #475569; line-height: 1.7; }
+    .from-dates { font-size: 8px; color: #94a3b8; margin-top: 4px; line-height: 1.8; }
+    .from-accepted { font-size: 8.5px; color: #15803d; font-weight: 700; margin-top: 2px; }
+    .from-rejected { font-size: 8.5px; color: #dc2626; font-weight: 700; margin-top: 2px; }
+
+    .meta-row { display: flex; justify-content: space-between; align-items: baseline; padding: 3.5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .meta-row:last-child { border-bottom: none; }
+    .meta-row .ml { font-size: 6.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.12em; }
+    .meta-row .mv { font-size: 9px; font-weight: 600; color: #f1f5f9; text-align: right; }
+    .meta-row .mv.alert { color: #fca5a5; }
+
+    /* ── ITEMS TABLE ── */
     .items-table { width: 100%; border-collapse: collapse; margin-bottom: 7mm; }
     .items-table thead tr { background: #0f172a; }
-    .items-table thead th { padding: 8px 10px; font-size: 7.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.7); text-align: left; }
+    .items-table thead th {
+      padding: 7px 9px; font-size: 6.5px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.6); text-align: left; white-space: nowrap;
+    }
     .items-table thead th.r { text-align: right; }
     .items-table tbody tr { border-bottom: 1px solid #f1f5f9; }
     .items-table tbody tr:nth-child(even) { background: #fafbfc; }
-    .items-table tbody tr:last-child { border-bottom: 2px solid #0f172a; }
-    .items-table tbody td { padding: 9px 10px; font-size: 10px; color: #334155; vertical-align: top; }
-    .items-table tbody td.r { text-align: right; }
-    .item-name { font-weight: 600; color: #0f172a; font-size: 10.5px; }
-    .item-desc { font-size: 9px; color: #94a3b8; margin-top: 2px; }
+    .items-table tbody tr:last-child { border-bottom: none; }
+    .items-table tbody td { padding: 8px 9px; font-size: 9px; color: #334155; vertical-align: top; }
+    .items-table tbody td.r { text-align: right; white-space: nowrap; }
+    .item-name { font-weight: 700; color: #0f172a; font-size: 9.5px; }
+    .item-desc { font-size: 8px; color: #94a3b8; margin-top: 2px; line-height: 1.55; }
 
-    .bottom-section { display: flex; justify-content: space-between; align-items: flex-start; gap: 10mm; margin-bottom: 6mm; }
-    .notes-area { flex: 1; }
-    .section-label { font-size: 7px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 5px; }
-    .section-text { font-size: 9.5px; color: #475569; line-height: 1.65; white-space: pre-line; }
-    .totals-box { width: 210px; flex-shrink: 0; }
-    .t-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 10px; border-bottom: 1px solid #f1f5f9; }
+    /* ── BOTTOM SECTION ── */
+    .bottom-section {
+      display: flex;
+      gap: 8mm;
+      margin-bottom: 7mm;
+      align-items: flex-start;
+    }
+
+    /* NOTES on LEFT */
+    .notes-area { flex: 1; min-width: 0; }
+    .section-label { font-size: 6.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 5px; padding-bottom: 4px; border-bottom: 1px solid #e2e8f0; }
+    .section-text { font-size: 8.5px; color: #475569; line-height: 1.65; white-space: pre-line; }
+
+    /* TOTALS on RIGHT */
+    .totals-box { flex-shrink: 0; width: 215px; }
+
+    .t-row { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; font-size: 9px; border-bottom: 1px solid #f1f5f9; }
     .t-row:last-child { border-bottom: none; }
     .t-row .l { color: #64748b; }
-    .t-row .a { font-weight: 500; color: #0f172a; }
+    .t-row .a { font-weight: 600; color: #0f172a; white-space: nowrap; }
     .t-row.disc .a { color: #15803d; }
-    .t-divider { border-top: 2px solid #0f172a; margin: 5px 0; }
-    .t-row.grand { padding: 7px 0 3px; }
-    .t-row.grand .l { font-size: 11px; font-weight: 700; color: #0f172a; }
-    .t-row.grand .a { font-size: 16px; font-weight: 800; color: #0f172a; }
 
-    .payment-box { border: 1px solid #e2e8f0; border-left: 3px solid #0f172a; border-radius: 0 5px 5px 0; padding: 9px 13px; margin-bottom: 6mm; background: #f8fafc; }
-    .payment-grid { display: flex; flex-wrap: wrap; gap: 5px 18px; margin-top: 5px; }
-    .pf-label { font-size: 7px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; }
-    .pf-value { font-size: 9.5px; color: #0f172a; font-weight: 500; }
+    .grand-total-box {
+      background: #0f172a; border-radius: 7px; padding: 9px 12px;
+      display: flex; justify-content: space-between; align-items: center; margin-top: 6px;
+    }
+    .grand-total-box .gl { font-size: 8px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; }
+    .grand-total-box .ga { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
 
-    .footer { position: absolute; bottom: 8mm; left: 14mm; right: 14mm; display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid #e2e8f0; }
-    .footer-l { font-size: 8.5px; color: #94a3b8; }
-    .footer-r { font-size: 8.5px; color: #94a3b8; text-align: right; }
-    .ty { font-size: 9.5px; font-weight: 600; color: #0f172a; margin-bottom: 1px; }
+
+
+    /* ── FOOTER ── */
+    .footer {
+      position: absolute; bottom: 8mm; left: 14mm; right: 14mm;
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 5px; border-top: 1px solid #e2e8f0;
+    }
+    .footer-left { font-size: 7.5px; color: #94a3b8; }
+    .footer-left strong { color: #475569; font-size: 8px; display: block; margin-bottom: 1px; }
+    .footer-right { font-size: 7.5px; color: #94a3b8; text-align: right; }
+    .footer-right strong { color: #0f172a; font-size: 10px; display: block; margin-bottom: 1px; }
   </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div>
-      {% if company_logo %}
-        <img src="{{ company_logo }}" class="logo-img" alt="{{ company_name }}"/>
-        {% if company_tagline %}<div class="company-tagline">{{ company_tagline }}</div>{% endif %}
-      {% else %}
-        <div class="company-name">{{ company_name }}</div>
-        {% if company_tagline %}<div class="company-tagline">{{ company_tagline }}</div>{% endif %}
-      {% endif %}
-      <div class="company-meta">
-        {% if company_email %}{{ company_email }}{% endif %}
-        {% if company_email and company_phone %} &nbsp;&middot;&nbsp; {% endif %}
-        {% if company_phone %}{{ company_phone }}{% endif %}
-        {% if company_tax_number %}<br/>Tax ID: {{ company_tax_number }}{% endif %}
+  <div class="accent-bar"></div>
+
+  <div class="content">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-left">
+        {% if company_logo %}
+          <img src="{{ company_logo }}" class="logo-img" alt="{{ company_name }}"/>
+          {% if company_tagline %}<div class="company-tagline">{{ company_tagline }}</div>{% endif %}
+        {% else %}
+          <div class="company-name">{{ company_name }}</div>
+          {% if company_tagline %}<div class="company-tagline">{{ company_tagline }}</div>{% endif %}
+        {% endif %}
+        <div class="company-meta">
+          {% if company_email %}{{ company_email }}{% endif %}
+          {% if company_email and company_phone %} &nbsp;&middot;&nbsp; {% endif %}
+          {% if company_phone %}{{ company_phone }}{% endif %}
+          {% if company_tax_number %}<br/>Tax ID: {{ company_tax_number }}{% endif %}
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="doc-type">Quote</div>
+        <div class="doc-number">{{ quote.number }}</div>
+        <div><span class="status-pill s-{{ quote.status }}">{{ quote.get_status_display }}</span></div>
       </div>
     </div>
-    <div class="header-right">
-      <div class="doc-label">Quote</div>
-      <div class="doc-number">{{ quote.number }}</div>
-      <div><span class="status-pill s-{{ quote.status }}">{{ quote.get_status_display }}</span></div>
-    </div>
-  </div>
 
-  <!-- META STRIP -->
-  <div class="meta-strip">
-    <div class="meta-item">
-      <div class="meta-label">Issue Date</div>
-      <div class="meta-value">{{ quote.issue_date|date:"d M Y" }}</div>
-    </div>
-    {% if quote.expiry_date %}
-    <div class="meta-item">
-      <div class="meta-label">Valid Until</div>
-      <div class="meta-value {% if quote.is_expired %}alert{% endif %}">{{ quote.expiry_date|date:"d M Y" }}</div>
-    </div>
-    {% endif %}
-    <div class="meta-item">
-      <div class="meta-label">Currency</div>
-      <div class="meta-value">{{ quote.currency }}</div>
-    </div>
-    {% if quote.reference %}
-    <div class="meta-item">
-      <div class="meta-label">Reference</div>
-      <div class="meta-value">{{ quote.reference }}</div>
-    </div>
-    {% endif %}
-    <div class="meta-item">
-      <div class="meta-label">Total Value</div>
-      <div class="meta-value">{{ quote.currency }} {{ quote.total }}</div>
-    </div>
-  </div>
+    <hr class="divider"/>
 
-  <!-- ADDRESSES -->
-  <div class="addresses">
-    <div class="address-block">
-      <div class="addr-label">Prepared For</div>
-      <div class="addr-name">{{ quote.customer.display_name }}</div>
-      {% if quote.customer.company_name and quote.customer.company_name != quote.customer.display_name %}<div class="addr-line">{{ quote.customer.company_name }}</div>{% endif %}
-      {% if quote.customer.billing_address_line1 %}<div class="addr-line">{{ quote.customer.billing_address_line1 }}</div>{% endif %}
-      {% if quote.customer.billing_address_line2 %}<div class="addr-line">{{ quote.customer.billing_address_line2 }}</div>{% endif %}
-      {% if quote.customer.billing_city or quote.customer.billing_state or quote.customer.billing_postal_code %}
-      <div class="addr-line">{% if quote.customer.billing_city %}{{ quote.customer.billing_city }}{% endif %}{% if quote.customer.billing_city and quote.customer.billing_state %}, {% endif %}{% if quote.customer.billing_state %}{{ quote.customer.billing_state }}{% endif %}{% if quote.customer.billing_postal_code %} {{ quote.customer.billing_postal_code }}{% endif %}</div>
-      {% endif %}
-      {% if quote.customer.billing_country %}<div class="addr-line">{{ quote.customer.billing_country }}</div>{% endif %}
-      {% if quote.customer.email %}<div class="addr-line" style="color:#2563eb;margin-top:4px;">{{ quote.customer.email }}</div>{% endif %}
-    </div>
-    <div class="address-block">
-      <div class="addr-label">Prepared By</div>
-      <div class="addr-name">{{ company_name }}</div>
-      {% if company_address %}<div class="addr-line">{{ company_address }}</div>{% endif %}
-      {% if company_registration_number %}<div class="addr-line" style="color:#94a3b8;">Reg: {{ company_registration_number }}</div>{% endif %}
-      <div class="addr-line" style="color:#94a3b8;margin-top:4px;">Issued {{ quote.issue_date|date:"d M Y" }}</div>
-      {% if quote.accepted_at %}<div class="addr-line" style="color:#15803d;font-weight:600;margin-top:3px;">&#10003; Accepted {{ quote.accepted_at|date:"d M Y" }}</div>{% endif %}
-    </div>
-  </div>
+    <!-- INFO ROW: Prepared For | Prepared By | Details -->
+    <div class="info-row">
 
-  <!-- LINE ITEMS -->
-  <table class="items-table">
-    <thead>
-      <tr>
-        <th style="width:44%">Description</th>
-        <th class="r" style="width:7%">Qty</th>
-        <th class="r" style="width:14%">Unit Price</th>
-        <th class="r" style="width:8%">Tax %</th>
-        <th class="r" style="width:11%">Tax Amt</th>
-        <th class="r" style="width:13%">Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for li in line_items %}
-      <tr>
-        <td>
-          {% if li.item %}<div class="item-name">{{ li.item.name }}</div>{% endif %}
-          {% if li.description %}<div class="item-desc">{{ li.description }}</div>{% endif %}
-        </td>
-        <td class="r">{{ li.quantity }}</td>
-        <td class="r">{{ li.unit_price }}</td>
-        <td class="r" style="color:#94a3b8;">{{ li.tax_rate }}%</td>
-        <td class="r" style="color:#64748b;">{{ li.tax_amount }}</td>
-        <td class="r" style="font-weight:600;color:#0f172a;">{{ li.line_total }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <!-- BOTTOM -->
-  <div class="bottom-section">
-    <div class="notes-area">
-      {% if quote.notes %}
-      <div style="margin-bottom:10px;">
-        <div class="section-label">Notes</div>
-        <div class="section-text">{{ quote.notes }}</div>
+      <div class="bill-to-block">
+        <div class="block-label">Prepared For</div>
+        <div class="addr-name">{{ quote.customer.display_name }}</div>
+        {% if quote.customer.company_name and quote.customer.company_name != quote.customer.display_name %}
+          <div class="addr-line">{{ quote.customer.company_name }}</div>
+        {% endif %}
+        {% if quote.customer.billing_address_line1 %}<div class="addr-line">{{ quote.customer.billing_address_line1 }}</div>{% endif %}
+        {% if quote.customer.billing_address_line2 %}<div class="addr-line">{{ quote.customer.billing_address_line2 }}</div>{% endif %}
+        {% if quote.customer.billing_city or quote.customer.billing_state or quote.customer.billing_postal_code %}
+        <div class="addr-line">
+          {% if quote.customer.billing_city %}{{ quote.customer.billing_city }}{% endif %}
+          {% if quote.customer.billing_city and quote.customer.billing_state %}, {% endif %}
+          {% if quote.customer.billing_state %}{{ quote.customer.billing_state }}{% endif %}
+          {% if quote.customer.billing_postal_code %} {{ quote.customer.billing_postal_code }}{% endif %}
+        </div>
+        {% endif %}
+        {% if quote.customer.billing_country %}<div class="addr-line">{{ quote.customer.billing_country }}</div>{% endif %}
+        {% if quote.customer.email %}<div class="addr-email">{{ quote.customer.email }}</div>{% endif %}
+        {% if quote.customer.tax_number %}<div class="addr-tax">VAT / Tax: {{ quote.customer.tax_number }}</div>{% endif %}
       </div>
-      {% endif %}
-      {% if quote.terms %}
-      <div>
-        <div class="section-label">Terms &amp; Conditions</div>
-        <div class="section-text">{{ quote.terms }}</div>
-      </div>
-      {% endif %}
-    </div>
-    <div class="totals-box">
-      <div class="t-row"><span class="l">Subtotal</span><span class="a">{{ quote.currency }} {{ quote.subtotal }}</span></div>
-      {% if quote.discount_amount and quote.discount_amount != "0.00" %}
-      <div class="t-row disc"><span class="l">Discount{% if quote.discount_type == "percentage" %} ({{ quote.discount_value }}%){% endif %}</span><span class="a">&minus; {{ quote.currency }} {{ quote.discount_amount }}</span></div>
-      {% endif %}
-      {% if quote.tax_amount and quote.tax_amount != "0.00" %}
-      <div class="t-row"><span class="l">Tax</span><span class="a">{{ quote.currency }} {{ quote.tax_amount }}</span></div>
-      {% endif %}
-      <div class="t-divider"></div>
-      <div class="t-row grand"><span class="l">Total</span><span class="a">{{ quote.currency }} {{ quote.total }}</span></div>
-    </div>
-  </div>
 
-  <!-- PAYMENT DETAILS -->
-  {% if company_bank_name or company_bank_account_number or company_bank_sort_code or company_bank_swift_iban %}
-  <div class="payment-box">
-    <div class="section-label">Payment Details</div>
-    <div class="payment-grid">
-      {% if company_bank_name %}<div><div class="pf-label">Bank</div><div class="pf-value">{{ company_bank_name }}</div></div>{% endif %}
-      {% if company_bank_account_name %}<div><div class="pf-label">Account Name</div><div class="pf-value">{{ company_bank_account_name }}</div></div>{% endif %}
-      {% if company_bank_account_number %}<div><div class="pf-label">Account Number</div><div class="pf-value">{{ company_bank_account_number }}</div></div>{% endif %}
-      {% if company_bank_sort_code %}<div><div class="pf-label">Sort Code / Routing</div><div class="pf-value">{{ company_bank_sort_code }}</div></div>{% endif %}
-      {% if company_bank_swift_iban %}<div><div class="pf-label">SWIFT / IBAN</div><div class="pf-value">{{ company_bank_swift_iban }}</div></div>{% endif %}
+      <div class="from-block">
+        <div class="block-label">Prepared By</div>
+        <div class="from-name">{{ company_name }}</div>
+        {% if company_address %}<div class="from-line">{{ company_address }}</div>{% endif %}
+        {% if company_registration_number %}<div class="from-line" style="color:#94a3b8;">Reg: {{ company_registration_number }}</div>{% endif %}
+        <div class="from-dates">
+          Issued {{ quote.issue_date|date:"d M Y" }}
+          {% if quote.sent_at %}<br/>Sent {{ quote.sent_at|date:"d M Y" }}{% endif %}
+        </div>
+        {% if quote.accepted_at %}<div class="from-accepted">&#10003; Accepted {{ quote.accepted_at|date:"d M Y" }}</div>{% endif %}
+        {% if quote.rejected_at %}<div class="from-rejected">&#10007; Rejected {{ quote.rejected_at|date:"d M Y" }}</div>{% endif %}
+      </div>
+
+      <div class="meta-block">
+        <div class="block-label">Details</div>
+        <div class="meta-row">
+          <span class="ml">Issue Date</span>
+          <span class="mv">{{ quote.issue_date|date:"d M Y" }}</span>
+        </div>
+        {% if quote.expiry_date %}
+        <div class="meta-row">
+          <span class="ml">Valid Until</span>
+          <span class="mv {% if quote.is_expired %}alert{% endif %}">{{ quote.expiry_date|date:"d M Y" }}</span>
+        </div>
+        {% endif %}
+        <div class="meta-row">
+          <span class="ml">Currency</span>
+          <span class="mv">{{ quote.currency }}</span>
+        </div>
+        {% if quote.reference %}
+        <div class="meta-row">
+          <span class="ml">Reference</span>
+          <span class="mv">{{ quote.reference }}</span>
+        </div>
+        {% endif %}
+        <div class="meta-row">
+          <span class="ml">Quote Total</span>
+          <span class="mv">{{ quote.currency }} {{ quote.total }}</span>
+        </div>
+      </div>
+
     </div>
-    {% if company_bank_instructions %}<div class="section-text" style="margin-top:6px;">{{ company_bank_instructions }}</div>{% endif %}
+
+    <!-- LINE ITEMS -->
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th style="width:40%">Description</th>
+          <th class="r" style="width:8%">Qty</th>
+          <th class="r" style="width:14%">Unit Price</th>
+          <th class="r" style="width:8%">Tax %</th>
+          <th class="r" style="width:12%">Tax Amt</th>
+          <th class="r" style="width:13%">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for li in line_items %}
+        <tr>
+          <td>
+            {% if li.item %}<div class="item-name">{{ li.item.name }}</div>{% endif %}
+            {% if li.description %}<div class="item-desc">{{ li.description }}</div>{% endif %}
+          </td>
+          <td class="r">{{ li.quantity }}</td>
+          <td class="r">{{ li.unit_price }}</td>
+          <td class="r" style="color:#94a3b8;">{{ li.tax_rate }}%</td>
+          <td class="r" style="color:#64748b;">{{ li.tax_amount }}</td>
+          <td class="r" style="font-weight:700;color:#0f172a;">{{ li.line_total }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- BOTTOM: notes LEFT, totals RIGHT -->
+    <div class="bottom-section">
+
+      <div class="notes-area">
+        {% if quote.notes %}
+        <div style="margin-bottom:8px;">
+          <div class="section-label">Notes</div>
+          <div class="section-text">{{ quote.notes }}</div>
+        </div>
+        {% endif %}
+        {% if quote.terms %}
+        <div>
+          <div class="section-label">Terms &amp; Conditions</div>
+          <div class="section-text">{{ quote.terms }}</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="totals-box">
+        <div class="t-row">
+          <span class="l">Subtotal</span>
+          <span class="a">{{ quote.currency }} {{ quote.subtotal }}</span>
+        </div>
+        {% if quote.discount_amount and quote.discount_amount != "0.00" %}
+        <div class="t-row disc">
+          <span class="l">Discount{% if quote.discount_type == "percentage" %} ({{ quote.discount_value }}%){% endif %}</span>
+          <span class="a">&minus; {{ quote.currency }} {{ quote.discount_amount }}</span>
+        </div>
+        {% endif %}
+        {% if quote.tax_amount and quote.tax_amount != "0.00" %}
+        <div class="t-row">
+          <span class="l">Tax</span>
+          <span class="a">{{ quote.currency }} {{ quote.tax_amount }}</span>
+        </div>
+        {% endif %}
+
+        <div class="grand-total-box">
+          <span class="gl">Quote Total</span>
+          <span class="ga">{{ quote.currency }} {{ quote.total }}</span>
+        </div>
+      </div>
+
+    </div>
+
+
+
   </div>
-  {% endif %}
 
   <!-- FOOTER -->
   <div class="footer">
-    <div class="footer-l">
-      <div class="ty">Thank you for considering our proposal.</div>
-      <div>{{ company_name }} &nbsp;&middot;&nbsp; {{ quote.number }}</div>
+    <div class="footer-left">
+      <strong>Thank you for considering our proposal.</strong>
+      {{ company_name }} &nbsp;&middot;&nbsp; {{ quote.number }}
     </div>
-    <div class="footer-r">
-      <div style="font-weight:700;color:#0f172a;font-size:10px;">{{ quote.currency }} {{ quote.total }}</div>
-      <div>Generated {{ quote.issue_date|date:"d M Y" }}</div>
+    <div class="footer-right">
+      <strong>{{ quote.currency }} {{ quote.total }}</strong>
+      Generated {{ quote.issue_date|date:"d M Y" }}
     </div>
   </div>
 

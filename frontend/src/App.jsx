@@ -10,6 +10,7 @@ import ItemsPage from './pages/ItemsPage'
 import InvoicesPage from './pages/InvoicesPage'
 import InvoiceFormPage from './pages/InvoiceFormPage'
 import QuotesPage from './pages/QuotesPage'
+import QuoteFormPage from './pages/QuoteFormPage'
 import PaymentsPage from './pages/PaymentsPage'
 import SubscriptionsPage from './pages/SubscriptionsPage'
 import ReportsPage from './pages/ReportsPage'
@@ -35,6 +36,8 @@ function AppRoutes() {
       <Route path="/invoices/new" element={<PrivateRoute><InvoiceFormPage /></PrivateRoute>} />
       <Route path="/invoices/:id" element={<PrivateRoute><InvoiceFormPage /></PrivateRoute>} />
       <Route path="/quotes" element={<PrivateRoute><QuotesPage /></PrivateRoute>} />
+      <Route path="/quotes/new" element={<PrivateRoute><QuoteFormPage /></PrivateRoute>} />
+      <Route path="/quotes/:id" element={<PrivateRoute><QuoteFormPage /></PrivateRoute>} />
       <Route path="/payments" element={<PrivateRoute><PaymentsPage /></PrivateRoute>} />
       <Route path="/subscriptions" element={<PrivateRoute><SubscriptionsPage /></PrivateRoute>} />
       <Route path="/reports" element={<PrivateRoute><ReportsPage /></PrivateRoute>} />

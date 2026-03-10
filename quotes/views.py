@@ -1,8 +1,8 @@
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.utils import timezone
 
 from core.exceptions import QuoteError
 from .models import Quote
@@ -68,29 +68,41 @@ class QuoteViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="generate-pdf")
     def generate_pdf(self, request, pk=None):
-        quote = self.get_object()
+        """Generate PDF synchronously, persist the path, and return the URL — mirrors InvoiceViewSet."""
+        quote = Quote.objects.select_related("customer", "created_by").prefetch_related(
+            "line_items__item"
+        ).get(id=self.get_object().id)
+
         from .pdf import render_quote_pdf
         try:
             pdf_path = render_quote_pdf(quote)
             if pdf_path:
-                return Response({"detail": "PDF generated.", "pdf_url": f"/media/{pdf_path}"})
+                quote.pdf_file = pdf_path
+                quote.pdf_generated_at = timezone.now()
+                quote.save(update_fields=["pdf_file", "pdf_generated_at"])
+                return Response({
+                    "detail": "PDF generated.",
+                    "pdf_url": quote.pdf_file.url,
+                })
             return Response({"detail": "PDF generation failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=["get"], url_path="pdf")
     def get_pdf(self, request, pk=None):
-        """Serve existing PDF or generate on-the-fly."""
-        quote = self.get_object()
+        """Always regenerate PDF to ensure the latest data is reflected."""
+        quote = Quote.objects.select_related("customer", "created_by").prefetch_related(
+            "line_items__item"
+        ).get(id=self.get_object().id)
         from .pdf import render_quote_pdf
-        import os
-        from django.conf import settings
-        from pathlib import Path
-        pdf_dir = Path(settings.MEDIA_ROOT) / "quotes" / "pdf"
-        filename = f"{quote.number.replace('/', '-')}.pdf"
-        pdf_path = pdf_dir / filename
-        if not pdf_path.exists():
-            render_quote_pdf(quote)
-        if pdf_path.exists():
-            rel = os.path.relpath(str(pdf_path), str(settings.MEDIA_ROOT))
-            return Response({"pdf_url": f"/media/{rel}"})
+        try:
+            pdf_path = render_quote_pdf(quote)
+            if pdf_path:
+                quote.pdf_file = pdf_path
+                quote.pdf_generated_at = timezone.now()
+                quote.save(update_fields=["pdf_file", "pdf_generated_at"])
+                quote.refresh_from_db(fields=["pdf_file"])  # ← add this line
+                return Response({"pdf_url": quote.pdf_file.url})
+            return Response({"detail": "PDF generation failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

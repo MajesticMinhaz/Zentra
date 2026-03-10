@@ -114,32 +114,23 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="pdf")
     def get_pdf(self, request, pk=None):
-        """Return PDF URL, generating synchronously if not yet created or file missing on disk."""
-        invoice = self.get_object()
-
-        # Regenerate if no DB record OR file has been deleted from disk
-        file_missing = (
-            not invoice.pdf_file or
-            not os.path.exists(os.path.join(settings.MEDIA_ROOT, str(invoice.pdf_file)))
-        )
-
-        if file_missing:
-            invoice = Invoice.objects.select_related("customer", "created_by").prefetch_related(
-                "line_items__item"
-            ).get(id=invoice.id)
-            from .pdf import render_invoice_pdf
-            from django.utils import timezone
-            try:
-                pdf_path = render_invoice_pdf(invoice)
-                if pdf_path:
-                    invoice.pdf_file = pdf_path
-                    invoice.pdf_generated_at = timezone.now()
-                    invoice.save(update_fields=["pdf_file", "pdf_generated_at"])
-            except Exception:
-                return Response({"detail": "PDF generation failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        if not invoice.pdf_file:
-            return Response({"detail": "PDF not available."}, status=status.HTTP_404_NOT_FOUND)
-        return Response({"pdf_url": invoice.pdf_file.url})
+        """Always regenerate PDF to ensure the latest data is reflected."""
+        invoice = Invoice.objects.select_related("customer", "created_by").prefetch_related(
+            "line_items__item"
+        ).get(id=self.get_object().id)
+        from .pdf import render_invoice_pdf
+        from django.utils import timezone
+        try:
+            pdf_path = render_invoice_pdf(invoice)
+            if pdf_path:
+                invoice.pdf_file = pdf_path
+                invoice.pdf_generated_at = timezone.now()
+                invoice.save(update_fields=["pdf_file", "pdf_generated_at"])
+                invoice.refresh_from_db(fields=["pdf_file"])  # ← add this line
+                return Response({"pdf_url": invoice.pdf_file.url})
+            return Response({"detail": "PDF generation failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TaxRateViewSet(viewsets.ModelViewSet):

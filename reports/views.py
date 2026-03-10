@@ -3,6 +3,7 @@ Reports API — Revenue, Outstanding, Customer Balances, Tax Summary, MRR.
 All reports are read-only aggregations.
 """
 from decimal import Decimal
+from pathlib import Path
 from datetime import date
 from django.db.models import Sum, Count, Q, F
 from django.db.models.functions import TruncMonth
@@ -162,15 +163,21 @@ class RevenueReportPDF(APIView):
 
     @extend_schema(tags=["Reports"])
     def get(self, request):
-        """Generate and return a revenue summary PDF report."""
+        """Generate and stream a revenue summary PDF report."""
         try:
             from weasyprint import HTML
         except ImportError:
             return Response({"detail": "WeasyPrint not installed."}, status=500)
 
+        from django.conf import settings
+        from django.template.loader import render_to_string
+        from django.http import HttpResponse
+        from organizations.models import Organization
+
         year = request.query_params.get("year", timezone.now().year)
 
-        monthly = (
+        # ── Monthly revenue data ──────────────────────────────────────────────
+        monthly_qs = (
             Payment.objects.filter(
                 status=Payment.PaymentStatus.COMPLETED,
                 payment_date__year=year,
@@ -181,37 +188,54 @@ class RevenueReportPDF(APIView):
             .order_by("month")
         )
 
-        month_names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+        month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
         monthly_data = [
             {
                 "month": month_names[int(r["month"].strftime("%m")) - 1],
                 "total_revenue": r["total_revenue"],
                 "payment_count": r["payment_count"],
             }
-            for r in monthly
+            for r in monthly_qs
         ]
 
-        total_revenue = sum(r["total_revenue"] for r in monthly_data) if monthly_data else Decimal("0.00")
+        total_revenue = (
+            sum(r["total_revenue"] for r in monthly_data)
+            if monthly_data else Decimal("0.00")
+        )
 
-        outstanding = Invoice.objects.filter(
-            status__in=[Invoice.Status.SENT, Invoice.Status.PARTIALLY_PAID, Invoice.Status.OVERDUE]
-        ).aggregate(total=Sum("balance_due"))["total"] or Decimal("0.00")
+        outstanding = (
+            Invoice.objects.filter(
+                status__in=[Invoice.Status.SENT, Invoice.Status.PARTIALLY_PAID, Invoice.Status.OVERDUE]
+            ).aggregate(total=Sum("balance_due"))["total"] or Decimal("0.00")
+        )
 
-        from django.template.loader import render_to_string
-        from django.conf import settings
-        from organizations.models import Organization
-
-        org = Organization.objects.filter(is_default=True, is_active=True).first() \
+        # ── Organisation branding ─────────────────────────────────────────────
+        org = (
+            Organization.objects.filter(is_default=True, is_active=True).first()
             or Organization.objects.filter(is_active=True).first()
+        )
 
+        # Convert logo to file:// URI so WeasyPrint can embed it (same pattern
+        # as invoices/pdf.py and quotes/pdf.py)
+        company_logo = ""
+        if org and org.logo:
+            try:
+                company_logo = Path(org.logo.path).as_uri()
+            except Exception:
+                company_logo = ""
+        elif not org:
+            company_logo = getattr(settings, "COMPANY_LOGO", "")
+
+        # ── Render template ───────────────────────────────────────────────────
         html_string = render_to_string("reports/pdf_report.html", {
             "year": year,
             "monthly_data": monthly_data,
             "total_revenue": total_revenue,
             "total_outstanding": outstanding,
-            "company_name": org.name if org else settings.COMPANY_NAME,
+            "company_name": org.name if org else getattr(settings, "COMPANY_NAME", ""),
             "company_tagline": org.tagline if org else "",
-            "company_logo": org.logo.path if (org and org.logo) else settings.COMPANY_LOGO,
+            "company_logo": company_logo,
             "company_address": org.full_address if org else "",
             "company_email": org.email if org else "",
             "company_phone": org.phone if org else "",
@@ -221,10 +245,12 @@ class RevenueReportPDF(APIView):
             "generated_at": timezone.now(),
         })
 
-        import io
-        pdf_bytes = HTML(string=html_string).write_pdf()
+        # base_url lets WeasyPrint resolve any remaining relative paths
+        pdf_bytes = HTML(
+            string=html_string,
+            base_url=str(settings.MEDIA_ROOT),
+        ).write_pdf()
 
-        from django.http import HttpResponse
         response = HttpResponse(pdf_bytes, content_type="application/pdf")
         response["Content-Disposition"] = f'attachment; filename="revenue-report-{year}.pdf"'
         return response

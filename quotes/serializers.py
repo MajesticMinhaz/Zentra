@@ -15,13 +15,16 @@ class QuoteLineItemSerializer(serializers.ModelSerializer):
 class QuoteSerializer(serializers.ModelSerializer):
     line_items = QuoteLineItemSerializer(many=True)
     customer_name = serializers.CharField(source="customer.display_name", read_only=True)
+    organization_name = serializers.CharField(source="organization.name", read_only=True)
     is_expired = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Quote
         fields = [
-            "id", "number", "status", "customer", "customer_name", "title",
-            "reference", "issue_date", "expiry_date",
+            "id", "number", "status",
+            "organization", "organization_name",
+            "customer", "customer_name",
+            "title", "reference", "issue_date", "expiry_date",
             "subtotal", "discount_type", "discount_value", "discount_amount",
             "tax_amount", "total", "currency",
             "notes", "terms", "is_expired",
@@ -66,10 +69,15 @@ class QuoteSerializer(serializers.ModelSerializer):
 
 class QuoteListSerializer(serializers.ModelSerializer):
     customer_name = serializers.CharField(source="customer.display_name", read_only=True)
+    organization_name = serializers.CharField(source="organization.name", read_only=True)
+    is_expired = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Quote
         fields = [
-            "id", "number", "status", "customer", "customer_name",
-            "title", "issue_date", "expiry_date", "total", "currency", "created_at",
+            "id", "number", "status",
+            "organization", "organization_name",
+            "customer", "customer_name",
+            "title", "issue_date", "expiry_date",
+            "total", "currency", "is_expired", "created_at",
         ]

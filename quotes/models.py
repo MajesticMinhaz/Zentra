@@ -48,6 +48,10 @@ class Quote(BaseModel):
     accepted_at = models.DateTimeField(null=True, blank=True)
     rejected_at = models.DateTimeField(null=True, blank=True)
 
+    # PDF caching — mirrors invoices.Invoice
+    pdf_file = models.FileField(upload_to="quotes/pdf/", null=True, blank=True)
+    pdf_generated_at = models.DateTimeField(null=True, blank=True)
+
     created_by = models.ForeignKey(
         "users.User", on_delete=models.SET_NULL, null=True, related_name="quotes_created"
     )

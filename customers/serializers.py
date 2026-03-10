@@ -67,8 +67,8 @@ class CustomerSerializer(serializers.ModelSerializer):
 
     def get_total_invoiced(self, obj):
         """
-        Sum of all non-cancelled, non-credit-note invoice totals.
-        Includes sales, retainer, and receipt types.
+        Sum of all sent/active non-credit-note invoice totals.
+        Excludes draft (not yet issued) and cancelled invoices.
         """
         from invoices.models import Invoice
         result = Invoice.objects.filter(
@@ -78,8 +78,12 @@ class CustomerSerializer(serializers.ModelSerializer):
                 Invoice.InvoiceType.RETAINER,
                 Invoice.InvoiceType.RECEIPT,
             ],
-        ).exclude(
-            status=Invoice.Status.CANCELLED,
+            status__in=[
+                Invoice.Status.SENT,
+                Invoice.Status.PARTIALLY_PAID,
+                Invoice.Status.OVERDUE,
+                Invoice.Status.PAID,
+            ],
         ).aggregate(total=Sum("total"))
         return result["total"] or 0
 
