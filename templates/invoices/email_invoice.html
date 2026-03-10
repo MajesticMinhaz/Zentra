@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; color: #333;">
+  <h2>Invoice {{ invoice.number }}</h2>
+  <p>Dear {{ invoice.customer.display_name }},</p>
+  <p>Please find attached your invoice <strong>{{ invoice.number }}</strong> for
+     <strong>{{ invoice.currency }} {{ invoice.total }}</strong>
+     {% if invoice.due_date %}due on <strong>{{ invoice.due_date }}</strong>{% endif %}.
+  </p>
+  <p>Thank you for your business.</p>
+</body>
+</html>

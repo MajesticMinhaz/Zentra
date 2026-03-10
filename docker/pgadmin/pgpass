@@ -1,0 +1,2 @@
+db:5432:zentra:zentra:zentra
+db:5432:*:zentra:zentra

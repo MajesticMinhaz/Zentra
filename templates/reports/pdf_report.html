@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Revenue Report {{ year }}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 11px; color: #1a1a2e; line-height: 1.5; background: #fff; }
+    .page { width: 210mm; min-height: 297mm; padding: 14mm 16mm 22mm; margin: auto; background: #fff; position: relative; }
+    /* Header */
+    .header-band {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+      color: white; padding: 20px 24px; border-radius: 10px;
+      display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;
+    }
+    .company-name { font-size: 20px; font-weight: 700; letter-spacing: -0.03em; color: white; }
+    .company-tagline { font-size: 9px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+    .doc-type { font-size: 22px; font-weight: 700; color: white; line-height: 1; text-align: right; }
+    .doc-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; text-align: right; }
+    /* KPI cards */
+    .kpi-row { display: flex; gap: 12px; margin-bottom: 24px; }
+    .kpi-card { flex: 1; border-radius: 8px; padding: 14px 16px; }
+    .kpi-card.revenue { background: #eff6ff; border: 1px solid #bfdbfe; }
+    .kpi-card.outstanding { background: #fef2f2; border: 1px solid #fecaca; }
+    .kpi-label { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
+    .kpi-card.revenue .kpi-label { color: #1d4ed8; }
+    .kpi-card.outstanding .kpi-label { color: #dc2626; }
+    .kpi-value { font-size: 20px; font-weight: 700; line-height: 1; }
+    .kpi-card.revenue .kpi-value { color: #1e3a8a; }
+    .kpi-card.outstanding .kpi-value { color: #dc2626; }
+    .kpi-sub { font-size: 9.5px; margin-top: 4px; }
+    .kpi-card.revenue .kpi-sub { color: #3b82f6; }
+    .kpi-card.outstanding .kpi-sub { color: #ef4444; }
+    /* Section headers */
+    .section-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+      padding-bottom: 8px; border-bottom: 2px solid #e2e8f0;
+    }
+    .section-title { font-size: 11px; font-weight: 700; color: #0f172a; }
+    .section-badge { font-size: 9px; font-weight: 600; background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 100px; }
+    /* Monthly table */
+    .monthly-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
+    .monthly-table thead tr { background: #1e1b4b; color: white; }
+    .monthly-table thead th { padding: 9px 12px; font-size: 8.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; text-align: left; }
+    .monthly-table thead th.right { text-align: right; }
+    .monthly-table tbody tr { border-bottom: 1px solid #f1f5f9; }
+    .monthly-table tbody tr:nth-child(even) { background: #fafafa; }
+    .monthly-table tbody td { padding: 9px 12px; font-size: 10.5px; color: #334155; }
+    .monthly-table tbody td.right { text-align: right; }
+    .month-name { font-weight: 600; color: #0f172a; }
+    .bar-cell { padding: 9px 12px 9px 0; }
+    .bar-track { background: #e2e8f0; border-radius: 4px; height: 8px; overflow: hidden; }
+    .bar-fill { background: linear-gradient(90deg, #4f46e5, #818cf8); height: 100%; border-radius: 4px; }
+    .monthly-table tfoot tr { background: #1e1b4b; }
+    .monthly-table tfoot td { padding: 10px 12px; font-size: 11px; font-weight: 700; color: white; }
+    .monthly-table tfoot td.right { text-align: right; }
+    /* Summary box */
+    .summary-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 10.5px; }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label { color: #64748b; }
+    .summary-amount { font-weight: 600; color: #0f172a; }
+    /* Footer */
+    .footer {
+      position: absolute; bottom: 10mm; left: 16mm; right: 16mm;
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 10px; border-top: 1px solid #e2e8f0;
+    }
+    .footer-left { font-size: 9px; color: #94a3b8; }
+    .footer-right { font-size: 9px; color: #94a3b8; text-align: right; }
+    .logo-img { max-height: 44px; max-width: 140px; object-fit: contain; }
+    .notes-box { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #4f46e5; border-radius: 0 6px 6px 0; padding: 12px 14px; margin-bottom: 24px; font-size: 10px; color: #475569; line-height: 1.6; white-space: pre-line; }
+    .notes-label { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-band">
+    <div>
+      {% if company_logo %}
+        <img src="{{ company_logo }}" class="logo-img" alt="{{ company_name }} Logo"/>
+        <div class="company-tagline">{{ company_tagline|default:"Financial Report" }}</div>
+      {% else %}
+        <div class="company-name">{{ company_name }}</div>
+        <div class="company-tagline">{{ company_tagline|default:"Financial Report" }}</div>
+      {% endif %}
+      {% if company_address %}<div style="font-size:8.5px;color:rgba(255,255,255,0.5);margin-top:4px;">{{ company_address }}</div>{% endif %}
+      {% if company_tax_number %}<div style="font-size:8px;color:rgba(255,255,255,0.4);margin-top:2px;">Tax ID: {{ company_tax_number }}</div>{% endif %}
+    </div>
+    <div>
+      <div class="doc-type">REVENUE REPORT</div>
+      <div class="doc-sub">Fiscal Year {{ year }}</div>
+      {% if company_email %}<div style="font-size:8.5px;color:rgba(255,255,255,0.5);margin-top:6px;text-align:right;">{{ company_email }}</div>{% endif %}
+      {% if company_phone %}<div style="font-size:8.5px;color:rgba(255,255,255,0.5);margin-top:2px;text-align:right;">{{ company_phone }}</div>{% endif %}
+    </div>
+  </div>
+
+  {% if default_report_notes %}
+  <div class="notes-box">
+    <div class="notes-label">Report Notes</div>
+    {{ default_report_notes }}
+  </div>
+  {% endif %}
+
+  <div class="kpi-row">
+    <div class="kpi-card revenue">
+      <div class="kpi-label">Total Revenue {{ year }}</div>
+      <div class="kpi-value">{{ total_revenue }}</div>
+      <div class="kpi-sub">All completed payments</div>
+    </div>
+    <div class="kpi-card outstanding">
+      <div class="kpi-label">Total Outstanding</div>
+      <div class="kpi-value">{{ total_outstanding }}</div>
+      <div class="kpi-sub">Unpaid invoices</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Monthly Revenue Breakdown</div>
+    <div class="section-badge">{{ year }}</div>
+  </div>
+
+  {% with max_rev=monthly_data|length %}
+  <table class="monthly-table">
+    <thead>
+      <tr>
+        <th style="width:14%">Month</th>
+        <th style="width:36%">Revenue</th>
+        <th class="right" style="width:18%">Amount</th>
+        <th class="right" style="width:12%">Payments</th>
+        <th class="right" style="width:16%">Share</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in monthly_data %}
+      <tr>
+        <td><span class="month-name">{{ row.month }}</span></td>
+        <td class="bar-cell">
+          <div class="bar-track">
+            <div class="bar-fill" style="width:{% if total_revenue and total_revenue > 0 %}{% widthratio row.total_revenue total_revenue 100 %}{% else %}0{% endif %}%"></div>
+          </div>
+        </td>
+        <td class="right" style="font-weight:600;color:#1e3a8a;">{{ row.total_revenue }}</td>
+        <td class="right" style="color:#64748b;">{{ row.payment_count }}</td>
+        <td class="right" style="color:#64748b;">
+          {% if total_revenue and total_revenue > 0 %}
+            {% widthratio row.total_revenue total_revenue 100 %}%
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;padding:24px;color:#94a3b8;">No revenue data for {{ year }}</td></tr>
+      {% endfor %}
+    </tbody>
+    {% if monthly_data %}
+    <tfoot>
+      <tr>
+        <td>TOTAL</td>
+        <td></td>
+        <td class="right">{{ total_revenue }}</td>
+        <td class="right">{{ monthly_data|length }} months</td>
+        <td class="right">100%</td>
+      </tr>
+    </tfoot>
+    {% endif %}
+  </table>
+  {% endwith %}
+
+  <div class="footer">
+    <div class="footer-left">
+      <div style="font-weight:600;color:#0f172a;">{{ company_name }} — Revenue Report {{ year }}</div>
+      <div>Generated {{ generated_at|date:"N j, Y \\a\\t P" }}</div>
+    </div>
+    <div class="footer-right">
+      <div>Confidential</div>
+      <div>Page 1 of 1</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
