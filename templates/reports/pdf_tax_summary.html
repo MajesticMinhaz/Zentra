@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Tax Summary Report</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page { size: A4; margin: 0; }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 9.5px;
+      color: #1e293b;
+      line-height: 1.5;
+      background: #fff;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #fff;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .accent-bar {
+      height: 5px;
+      background: linear-gradient(90deg, #0f172a 0%, #16a34a 60%, #4ade80 100%);
+      width: 100%;
+    }
+
+    .content { padding: 10mm 14mm 22mm 14mm; flex: 1; }
+
+    /* HEADER */
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 9mm; }
+    .header-left { flex: 1; min-width: 0; padding-right: 12mm; }
+    .logo-img { max-height: 52px; max-width: 150px; object-fit: contain; display: block; margin-bottom: 6px; }
+    .company-name { font-size: 18px; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; line-height: 1.1; }
+    .company-tagline { font-size: 7px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.18em; margin-top: 3px; }
+    .company-meta { font-size: 8px; color: #64748b; line-height: 1.8; margin-top: 7px; }
+    .header-right { text-align: right; flex-shrink: 0; }
+    .doc-type { font-size: 7px; font-weight: 700; color: #16a34a; text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 4px; }
+    .doc-number { font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; line-height: 1.1; }
+    .doc-sub { font-size: 8.5px; color: #64748b; margin-top: 4px; }
+
+    .divider { border: none; border-top: 1.5px solid #e2e8f0; margin: 0 0 8mm 0; }
+
+    /* INFO ROW — mirrors invoice three-column layout */
+    .info-row { display: flex; gap: 5mm; margin-bottom: 8mm; }
+
+    .period-block {
+      flex: 1.2; background: #f8fafc; border-radius: 7px;
+      padding: 8px 11px; border-left: 3px solid #16a34a;
+    }
+    .meta-block {
+      flex: 1.1; background: #0f172a; border-radius: 7px; padding: 8px 11px;
+    }
+    .empty-block { flex: 1; }
+
+    .block-label { font-size: 6.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 5px; }
+    .period-block .block-label { color: #16a34a; }
+    .meta-block .block-label { color: #64748b; }
+
+    .period-value { font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+    .period-line { font-size: 8.5px; color: #475569; line-height: 1.7; }
+
+    .meta-row { display: flex; justify-content: space-between; align-items: baseline; padding: 3.5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .meta-row:last-child { border-bottom: none; }
+    .meta-row .ml { font-size: 6.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.12em; }
+    .meta-row .mv { font-size: 9px; font-weight: 600; color: #f1f5f9; text-align: right; }
+    .meta-row .mv.green { color: #4ade80; }
+
+    /* BREAKDOWN TABLE — mirrors items-table */
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 7mm; }
+    .items-table thead tr { background: #0f172a; }
+    .items-table thead th { padding: 7px 9px; font-size: 6.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.6); text-align: left; }
+    .items-table thead th.r { text-align: right; }
+    .items-table tbody tr { border-bottom: 1px solid #f1f5f9; }
+    .items-table tbody tr:nth-child(even) { background: #fafbfc; }
+    .items-table tbody td { padding: 10px 9px; font-size: 9px; color: #334155; }
+    .items-table tbody td.r { text-align: right; }
+    .items-table tbody td.label { color: #64748b; }
+
+    /* TOTALS BOX — mirrors invoice totals */
+    .totals-wrap { display: flex; justify-content: flex-end; margin-bottom: 7mm; }
+    .totals-box { width: 215px; }
+    .t-row { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; font-size: 9px; border-bottom: 1px solid #f1f5f9; }
+    .t-row:last-child { border-bottom: none; }
+    .t-row .l { color: #64748b; }
+    .t-row .a { font-weight: 600; color: #0f172a; white-space: nowrap; }
+    .t-row.disc .a { color: #d97706; }
+    .t-row.tax .a { color: #2563eb; }
+    .grand-total-box { background: #0f172a; border-radius: 7px; padding: 9px 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+    .grand-total-box .gl { font-size: 8px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; }
+    .grand-total-box .ga { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+
+    /* DISCLAIMER */
+    .notes-box { border: 1px solid #e2e8f0; border-left: 3px solid #16a34a; border-radius: 0 5px 5px 0; padding: 9px 13px; background: #f0fdf4; }
+    .section-label { font-size: 6.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 5px; padding-bottom: 4px; border-bottom: 1px solid #e2e8f0; }
+    .section-text { font-size: 8.5px; color: #475569; line-height: 1.65; white-space: pre-line; }
+
+    /* FOOTER */
+    .footer { position: absolute; bottom: 8mm; left: 14mm; right: 14mm; display: flex; justify-content: space-between; align-items: center; padding-top: 5px; border-top: 1px solid #e2e8f0; }
+    .footer-left { font-size: 7.5px; color: #94a3b8; }
+    .footer-left strong { color: #475569; font-size: 8px; display: block; margin-bottom: 1px; }
+    .footer-right { font-size: 7.5px; color: #94a3b8; text-align: right; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="accent-bar"></div>
+
+  <div class="content">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-left">
+        {% if company_logo %}
+          <img src="{{ company_logo }}" class="logo-img" alt="{{ company_name }}"/>
+          {% if company_tagline %}<div class="company-tagline">{{ company_tagline }}</div>{% endif %}
+        {% else %}
+          <div class="company-name">{{ company_name }}</div>
+          {% if company_tagline %}<div class="company-tagline">{{ company_tagline }}</div>{% endif %}
+        {% endif %}
+        <div class="company-meta">
+          {% if company_email %}{{ company_email }}{% endif %}
+          {% if company_email and company_phone %} &nbsp;&middot;&nbsp; {% endif %}
+          {% if company_phone %}{{ company_phone }}{% endif %}
+          {% if company_tax_number %}<br/>Tax ID: {{ company_tax_number }}{% endif %}
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="doc-type">Tax Summary</div>
+        <div class="doc-number">Tax Report</div>
+        <div class="doc-sub">
+          {% if date_from or date_to %}
+            {{ date_from|default:"Beginning" }} — {{ date_to|default:"Present" }}
+          {% else %}
+            All Time
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- INFO ROW -->
+    <div class="info-row">
+
+      <div class="period-block">
+        <div class="block-label">Report Period</div>
+        <div class="period-value">
+          {% if date_from or date_to %}
+            {{ date_from|default:"Beginning" }} — {{ date_to|default:"Present" }}
+          {% else %}
+            All Time
+          {% endif %}
+        </div>
+        <div class="period-line">Based on paid &amp; partially paid invoices</div>
+        <div class="period-line" style="margin-top:4px;">{{ invoice_count }} invoice{{ invoice_count|pluralize }} included</div>
+      </div>
+
+      <div class="empty-block"></div>
+
+      <div class="meta-block">
+        <div class="block-label">Summary</div>
+        <div class="meta-row">
+          <span class="ml">Total Revenue</span>
+          <span class="mv green">{{ total_revenue }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="ml">Tax Collected</span>
+          <span class="mv">{{ total_tax }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="ml">Discounts</span>
+          <span class="mv">{{ total_discount }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="ml">Invoices</span>
+          <span class="mv">{{ invoice_count }}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BREAKDOWN TABLE -->
+    <div class="section-label" style="margin-bottom:5px;">Detailed Breakdown</div>
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th style="width:60%">Line Item</th>
+          <th class="r" style="width:40%">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label">Gross Revenue (before discounts)</td>
+          <td class="r" style="font-weight:700;color:#0f172a;">{{ total_revenue }}</td>
+        </tr>
+        <tr>
+          <td class="label">Less: Discounts Applied</td>
+          <td class="r" style="font-weight:600;color:#d97706;">&minus; {{ total_discount }}</td>
+        </tr>
+        <tr>
+          <td class="label">Tax Collected</td>
+          <td class="r" style="font-weight:600;color:#2563eb;">{{ total_tax }}</td>
+        </tr>
+        <tr>
+          <td class="label">Number of Invoices Included</td>
+          <td class="r" style="color:#64748b;">{{ invoice_count }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- TOTALS BOX -->
+    <div class="totals-wrap">
+      <div class="totals-box">
+        <div class="t-row">
+          <span class="l">Gross Revenue</span>
+          <span class="a">{{ total_revenue }}</span>
+        </div>
+        <div class="t-row disc">
+          <span class="l">Discounts</span>
+          <span class="a">&minus; {{ total_discount }}</span>
+        </div>
+        <div class="t-row tax">
+          <span class="l">Tax Collected</span>
+          <span class="a">{{ total_tax }}</span>
+        </div>
+        <div class="grand-total-box">
+          <span class="gl">Net Revenue</span>
+          <span class="ga">{{ total_revenue }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div class="notes-box">
+      <div class="section-label">Important Note</div>
+      <div class="section-text">This tax summary is generated from paid and partially paid invoices only. Please consult your accountant or tax advisor to confirm filing requirements and obligations for your jurisdiction. This report is for informational purposes only and does not constitute tax advice.</div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">
+      <strong>{{ company_name }} — Tax Summary Report</strong>
+      Generated {{ generated_at|date:"d M Y \a\t P" }} &nbsp;&middot;&nbsp; Confidential
+    </div>
+    <div class="footer-right">{{ invoice_count }} invoice{{ invoice_count|pluralize }}</div>
+  </div>
+
+</div>
+</body>
+</html>

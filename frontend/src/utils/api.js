@@ -141,7 +141,6 @@ export const getQuotePdf = (id) => api.get(`/quotes/${id}/pdf/`)
 
 // Payments
 export const getPayments = (params) => api.get('/payments/', { params })
-export const getPayment  = (id) => api.get(`/payments/${id}/`)
 export const createPayment = (data) => api.post('/payments/', data)
 export const refundPayment = (id, data) => api.post(`/payments/${id}/refund/`, data)
 
@@ -156,8 +155,27 @@ export const updateSubscription = (id, data) => api.patch(`/subscriptions/${id}/
 export const deleteSubscription = (id) => api.delete(`/subscriptions/${id}/`)
 
 // Reports
-export const getRevenueReport = (params) => api.get('/reports/revenue-by-month/', { params })
-export const getOutstandingReport = () => api.get('/reports/outstanding-invoices/')
-export const getMRRReport = () => api.get('/reports/mrr/')
-export const getCustomerBalances = () => api.get('/reports/customer-balances/')
-export const getRevenueReportPdfUrl = (year) => `/api/v1/reports/revenue-pdf/?year=${year}`
+export const getRevenueReport       = (params) => api.get('/reports/revenue-by-month/',    { params })
+export const getOutstandingReport   = ()        => api.get('/reports/outstanding-invoices/')
+export const getMRRReport           = ()        => api.get('/reports/mrr/')
+export const getCustomerBalances    = ()        => api.get('/reports/customer-balances/')
+export const getTaxSummary          = (params)  => api.get('/reports/tax-summary/',         { params })
+export const getPaymentMethods      = (params)  => api.get('/reports/payment-methods/',     { params })
+export const getTopCustomers        = (params)  => api.get('/reports/top-customers/',       { params })
+export const getInvoiceFunnel       = ()        => api.get('/reports/invoice-funnel/')
+// Report PDF helpers — call the API (with auth) to generate & save the PDF,
+// get back a pdf_url pointing at /media/, then download it via downloadPdfUrl.
+export const downloadReportPdf = async (apiPath, filename) => {
+  const { data } = await api.get(apiPath)
+  if (!data.pdf_url) throw new Error('No pdf_url returned')
+  await downloadPdfUrl(data.pdf_url, filename)
+}
+export const downloadRevenuePdf     = (year)             => downloadReportPdf(`/reports/revenue-pdf/?year=${year}`,                         `revenue-report-${year}.pdf`)
+export const downloadOutstandingPdf = ()                 => downloadReportPdf(`/reports/outstanding-pdf/`,                                   'outstanding-invoices-report.pdf')
+export const downloadTaxSummaryPdf  = (dateFrom, dateTo) => {
+  const params = new URLSearchParams()
+  if (dateFrom) params.set('date_from', dateFrom)
+  if (dateTo)   params.set('date_to',   dateTo)
+  const qs = params.toString()
+  return downloadReportPdf(`/reports/tax-summary-pdf/${qs ? '?' + qs : ''}`, 'tax-summary-report.pdf')
+}
