@@ -49,10 +49,13 @@ export const downloadPdfUrl = async (url, filename) => {
     fetchUrl = parsed.pathname + parsed.search
   } catch { /* already relative */ }
 
-  const token = localStorage.getItem('access_token')
-  const response = await fetch(fetchUrl, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  })
+  // Append cache-busting timestamp so the browser never serves a stale cached PDF
+  const separator = fetchUrl.includes('?') ? '&' : '?'
+  fetchUrl = `${fetchUrl}${separator}v=${Date.now()}`
+
+  // Media files are served directly by Nginx — no Authorization header needed
+  // (adding it triggers a CORS preflight that Nginx rejects)
+  const response = await fetch(fetchUrl)
   if (!response.ok) throw new Error(`Download failed: ${response.status}`)
   const blob = await response.blob()
   const objectUrl = URL.createObjectURL(blob)

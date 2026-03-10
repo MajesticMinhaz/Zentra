@@ -1,4 +1,6 @@
+import os
 import django_filters
+from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -112,10 +114,16 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="pdf")
     def get_pdf(self, request, pk=None):
-        """Return PDF URL, generating synchronously if not yet created."""
+        """Return PDF URL, generating synchronously if not yet created or file missing on disk."""
         invoice = self.get_object()
-        if not invoice.pdf_file:
-            # Auto-generate on demand
+
+        # Regenerate if no DB record OR file has been deleted from disk
+        file_missing = (
+            not invoice.pdf_file or
+            not os.path.exists(os.path.join(settings.MEDIA_ROOT, str(invoice.pdf_file)))
+        )
+
+        if file_missing:
             invoice = Invoice.objects.select_related("customer", "created_by").prefetch_related(
                 "line_items__item"
             ).get(id=invoice.id)
