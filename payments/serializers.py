@@ -31,5 +31,6 @@ class PaymentListSerializer(serializers.ModelSerializer):
         model = Payment
         fields = [
             "id", "invoice_number", "customer_name", "amount", "currency",
-            "payment_date", "payment_method", "status", "transaction_reference", "created_at",
+            "payment_date", "payment_method", "status", "transaction_reference",
+            "notes", "created_at",
         ]

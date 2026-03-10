@@ -263,20 +263,16 @@ export default function InvoiceFormPage() {
                         value={form.organization || ''}
                         onChange={e => {
                           const orgId = e.target.value
-                          setF('organization', orgId)
-                          // Auto-fill default notes/terms from chosen org
                           const org = organizations.find(o => o.id === orgId)
-                          if (org && isNew) {
-                            const typeKey = form.invoice_type === 'retainer' ? 'retainer'
-                              : form.invoice_type === 'credit_note' ? 'credit_note'
-                              : form.invoice_type === 'receipt' ? 'receipt' : 'invoice'
-                            setForm(p => ({
-                              ...p,
-                              organization: orgId,
-                              notes: org[`default_${typeKey}_notes`] || '',
-                              terms: org[`default_${typeKey}_terms`] || '',
-                            }))
-                          }
+                          const typeKey = form.invoice_type === 'retainer' ? 'retainer'
+                            : form.invoice_type === 'credit_note' ? 'credit_note'
+                            : form.invoice_type === 'receipt' ? 'receipt' : 'invoice'
+                          setForm(p => ({
+                            ...p,
+                            organization: orgId,
+                            notes: org ? (org[`default_${typeKey}_notes`] || '') : '',
+                            terms: org ? (org[`default_${typeKey}_terms`] || '') : '',
+                          }))
                         }}
                         disabled={!canEdit}
                       >
@@ -306,10 +302,8 @@ export default function InvoiceFormPage() {
                         setForm(p => ({
                           ...p,
                           invoice_type: newType,
-                          ...(isNew && org ? {
-                            notes: org[`default_${typeKey}_notes`] || '',
-                            terms: org[`default_${typeKey}_terms`] || '',
-                          } : {})
+                          notes: org ? (org[`default_${typeKey}_notes`] || '') : '',
+                          terms: org ? (org[`default_${typeKey}_terms`] || '') : '',
                         }))
                       }} disabled={!canEdit}>
                         <option value="sales">Sales Invoice</option>

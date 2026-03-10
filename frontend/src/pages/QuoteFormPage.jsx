@@ -271,16 +271,13 @@ export default function QuoteFormPage() {
                         value={form.organization || ''}
                         onChange={e => {
                           const orgId = e.target.value
-                          setF('organization', orgId)
                           const org = organizations.find(o => o.id === orgId)
-                          if (org && isNew) {
-                            setForm(p => ({
-                              ...p,
-                              organization: orgId,
-                              notes: org.default_quote_notes || '',
-                              terms: org.default_quote_terms || '',
-                            }))
-                          }
+                          setForm(p => ({
+                            ...p,
+                            organization: orgId,
+                            notes: org ? (org.default_quote_notes || '') : '',
+                            terms: org ? (org.default_quote_terms || '') : '',
+                          }))
                         }}
                         disabled={!canEdit}
                       >

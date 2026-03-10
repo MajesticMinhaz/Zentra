@@ -141,6 +141,7 @@ export const getQuotePdf = (id) => api.get(`/quotes/${id}/pdf/`)
 
 // Payments
 export const getPayments = (params) => api.get('/payments/', { params })
+export const getPayment  = (id) => api.get(`/payments/${id}/`)
 export const createPayment = (data) => api.post('/payments/', data)
 export const refundPayment = (id, data) => api.post(`/payments/${id}/refund/`, data)
 

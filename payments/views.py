@@ -1,3 +1,4 @@
+import django_filters
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,8 +10,18 @@ from .serializers import PaymentSerializer, PaymentListSerializer
 from .services import PaymentService
 
 
+class PaymentFilter(django_filters.FilterSet):
+    status = django_filters.ChoiceFilter(choices=Payment.PaymentStatus.choices)
+    payment_method = django_filters.ChoiceFilter(choices=Payment.PaymentMethod.choices)
+
+    class Meta:
+        model = Payment
+        fields = ["status", "payment_method"]
+
+
 class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAccountant]
+    filterset_class = PaymentFilter
     search_fields = ["invoice__number", "customer__display_name", "transaction_reference"]
     ordering_fields = ["payment_date", "amount", "created_at"]
     ordering = ["-payment_date"]
